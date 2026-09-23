@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
   getAuth, 
@@ -31,7 +32,6 @@ const firebaseConfig = {
   measurementId: "G-K9RVCN91WT"
 };
 
-// Initialize Firebase Services
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -42,12 +42,14 @@ const ALLOWED_DOMAIN = "@iut-dhaka.edu";
 // DOM Elements
 const authSection = document.getElementById("authSection");
 const userInfo = document.getElementById("userInfo");
-const userEmailSpan = document.getElementById("userEmail");
+const userNameSpan = document.getElementById("userName");
 const appContent = document.getElementById("appContent");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 
 const profileForm = document.getElementById("profileForm");
+const deptInput = document.getElementById("dept");
+const batchInput = document.getElementById("batch");
 const bloodGroupInput = document.getElementById("bloodGroup");
 const phoneInput = document.getElementById("phone");
 const lastDonatedInput = document.getElementById("lastDonated");
@@ -64,6 +66,23 @@ const urgentForm = document.getElementById("urgentForm");
 const cancelUrgentBtn = document.getElementById("cancelUrgentBtn");
 
 let cachedDonors = [];
+
+// Aggressively strip any numeric IDs or digits from student display names
+function cleanStudentName(rawName, email) {
+  let name = rawName || email.split("@")[0];
+  
+  // Remove all numbers/digits entirely (e.g. 240041219)
+  name = name.replace(/\d+/g, "").trim();
+  
+  // Remove leftover symbols like underscores, hyphens, periods
+  name = name.replace(/[._-]+/g, " ").trim();
+  
+  // Clean up double spaces created by string replacement
+  name = name.replace(/\s+/g, " ");
+  
+  // Capitalize each word properly
+  return name.replace(/\b\w/g, char => char.toUpperCase()) || "IUT Student";
+}
 
 // --- 1. Auth Handlers ---
 
@@ -87,7 +106,9 @@ onAuthStateChanged(auth, async (user) => {
     authSection.classList.add("hidden");
     userInfo.classList.remove("hidden");
     appContent.classList.remove("hidden");
-    userEmailSpan.textContent = user.email;
+    
+    const cleanName = cleanStudentName(user.displayName, user.email);
+    userNameSpan.textContent = cleanName;
 
     await loadUserProfile(user.uid);
     await loadDonors();
@@ -106,6 +127,8 @@ async function loadUserProfile(uid) {
     const userDoc = await getDoc(doc(db, "donors", uid));
     if (userDoc.exists()) {
       const data = userDoc.data();
+      deptInput.value = data.dept || "CSE";
+      batchInput.value = data.batch || "";
       bloodGroupInput.value = data.bloodGroup || "A+";
       phoneInput.value = data.phone || "";
       lastDonatedInput.value = data.lastDonated || "";
@@ -121,10 +144,13 @@ profileForm.addEventListener("submit", async (e) => {
   const user = auth.currentUser;
   if (!user) return;
 
+  const displayNameClean = cleanStudentName(user.displayName, user.email);
+
   try {
     await setDoc(doc(db, "donors", user.uid), {
-      name: user.displayName || "Campus Student",
-      email: user.email,
+      name: displayNameClean,
+      dept: deptInput.value,
+      batch: batchInput.value,
       bloodGroup: bloodGroupInput.value,
       phone: phoneInput.value,
       lastDonated: lastDonatedInput.value,
@@ -194,14 +220,19 @@ function renderDonors() {
 
     count++;
     const statusClass = status.eligible ? "status-eligible" : "status-ineligible";
+    
+    // Aggressively clean name on render as well in case old database data contains numbers
+    const cleanName = cleanStudentName(donor.name, "");
+    const deptBatchText = donor.dept && donor.batch ? `${donor.dept} (${donor.batch})` : (donor.dept || donor.batch || "");
 
     const card = document.createElement("div");
     card.className = "donor-card";
     card.innerHTML = `
       <div class="donor-header">
-        <span class="donor-name">${donor.name}</span>
+        <span class="donor-name">${cleanName}</span>
         <span class="blood-badge">${donor.bloodGroup}</span>
       </div>
+      ${deptBatchText ? `<div class="donor-sub">${deptBatchText}</div>` : ''}
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
         <strong>Phone:</strong> <a href="tel:${donor.phone}" style="color: var(--primary); text-decoration: none; font-weight: 600;">${donor.phone}</a>
       </p>
@@ -220,7 +251,7 @@ function renderDonors() {
 filterBloodGroup.addEventListener("change", renderDonors);
 filterEligibility.addEventListener("change", renderDonors);
 
-// --- 5. Urgent Emergency Feed & Persistent Local Dismissal ---
+// --- 5. Emergency Feed ---
 
 function getDismissedRequests() {
   return JSON.parse(localStorage.getItem("dismissed_urgent_requests") || "[]");
@@ -242,13 +273,15 @@ urgentForm.addEventListener("submit", async (e) => {
   const user = auth.currentUser;
   if (!user) return;
 
+  const cleanPosterName = cleanStudentName(user.displayName, user.email);
+
   try {
     await addDoc(collection(db, "urgent_requests"), {
       bloodGroup: document.getElementById("urgentBloodGroup").value,
       hospital: document.getElementById("urgentHospital").value,
       phone: document.getElementById("urgentPhone").value,
       postedByUid: user.uid,
-      postedByEmail: user.email,
+      postedByName: cleanPosterName,
       createdAt: new Date().toISOString()
     });
 
@@ -278,15 +311,14 @@ async function loadUrgentFeed() {
       const req = docSnap.data();
       const reqId = docSnap.id;
 
-      // 1. Skip if locally dismissed
       if (dismissedList.includes(reqId)) return;
 
-      // 2. Skip requests older than 48 hours
       const createdDate = new Date(req.createdAt);
       const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
       if (hoursDiff > 48) return;
 
       const isOwner = currentUser && req.postedByUid && req.postedByUid === currentUser.uid;
+      const cleanPoster = cleanStudentName(req.postedByName, "");
 
       const card = document.createElement("div");
       card.className = "urgent-banner";
@@ -301,7 +333,7 @@ async function loadUrgentFeed() {
           <p style="margin-bottom: 4px;"><strong>Blood Group:</strong> <span style="font-size: 16px; font-weight: 700;">${req.bloodGroup}</span></p>
           <p style="margin-bottom: 4px;"><strong>Location:</strong> ${req.hospital}</p>
           <p style="margin-bottom: 4px;"><strong>Contact:</strong> <a href="tel:${req.phone}" style="color: #991b1b; font-weight: 700;">${req.phone}</a></p>
-          <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Posted by: ${req.postedByEmail || "Campus Student"}</p>
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Posted by: ${cleanPoster}</p>
         </div>
       `;
 
@@ -332,7 +364,6 @@ async function loadUrgentFeed() {
   }
 }
 
-// Global deletion function attached to window scope
 window.deleteUrgentRequest = async function(requestId) {
   if (!confirm("Has this request been fulfilled? Clicking OK will remove it for everyone.")) return;
 

@@ -55,9 +55,9 @@
 
     .donors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
     .donor-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
-    .donor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .donor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .donor-name { font-weight: 600; font-size: 15px; }
-    .donor-sub { font-size: 12px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px; }
+    .donor-sub { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
     .blood-badge { background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 12px; padding: 4px 8px; border-radius: 6px; }
     .status-badge { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 20px; display: inline-block; }
     .status-eligible { background: #dcfce7; color: #15803d; }
@@ -99,7 +99,7 @@
       <button id="openUrgentModalBtn" class="btn">+ Post Emergency Need</button>
     </div>
 
-    <!-- Create Emergency Request Modal/Form -->
+    <!-- Create Emergency Request Form -->
     <div id="urgentFormCard" class="card hidden" style="border-left: 4px solid var(--primary);">
       <h3 style="font-size: 16px; margin-bottom: 12px;">Post Emergency Need</h3>
       <form id="urgentForm">
