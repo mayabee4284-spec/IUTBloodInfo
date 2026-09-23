@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
   getAuth, 
@@ -16,8 +17,8 @@ import {
   getDocs, 
   deleteDoc,
   query, 
-  orderBy, 
-  limit 
+  where,
+  orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Firebase Configuration
@@ -31,8 +32,6 @@ const firebaseConfig = {
   measurementId: "G-K9RVCN91WT"
 };
 
-
-// Initialize Services
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -54,27 +53,26 @@ const phoneInput = document.getElementById("phone");
 const lastDonatedInput = document.getElementById("lastDonated");
 const isAvailableInput = document.getElementById("isAvailable");
 
+const filterBloodGroup = document.getElementById("filterBloodGroup");
+const filterEligibility = document.getElementById("filterEligibility");
 const donorsList = document.getElementById("donorsList");
 
-const urgentBanner = document.getElementById("urgentBanner");
-const urgentDetails = document.getElementById("urgentDetails");
-const urgentActions = document.getElementById("urgentActions");
+const urgentFeed = document.getElementById("urgentFeed");
 const openUrgentModalBtn = document.getElementById("openUrgentModalBtn");
 const urgentFormCard = document.getElementById("urgentFormCard");
 const urgentForm = document.getElementById("urgentForm");
 const cancelUrgentBtn = document.getElementById("cancelUrgentBtn");
 
-// --- 1. Auth Listeners ---
+let cachedDonors = [];
+
+// --- 1. Auth Handlers ---
 
 loginBtn.addEventListener("click", async () => {
   try {
     const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-
-    if (!user.email.endsWith(ALLOWED_DOMAIN)) {
-      alert(`Please use your official university email ending in ${ALLOWED_DOMAIN}`);
+    if (!result.user.email.endsWith(ALLOWED_DOMAIN)) {
+      alert(`Please sign in with your university email ending in ${ALLOWED_DOMAIN}`);
       await signOut(auth);
-      return;
     }
   } catch (error) {
     console.error("Login Error:", error);
@@ -82,9 +80,7 @@ loginBtn.addEventListener("click", async () => {
   }
 });
 
-logoutBtn.addEventListener("click", () => {
-  signOut(auth);
-});
+logoutBtn.addEventListener("click", () => signOut(auth));
 
 onAuthStateChanged(auth, async (user) => {
   if (user && user.email.endsWith(ALLOWED_DOMAIN)) {
@@ -95,7 +91,7 @@ onAuthStateChanged(auth, async (user) => {
 
     await loadUserProfile(user.uid);
     await loadDonors();
-    await loadUrgentBanner();
+    await loadUrgentFeed();
   } else {
     authSection.classList.remove("hidden");
     userInfo.classList.add("hidden");
@@ -127,7 +123,7 @@ profileForm.addEventListener("submit", async (e) => {
 
   try {
     await setDoc(doc(db, "donors", user.uid), {
-      name: user.displayName || "Anonymous Donor",
+      name: user.displayName || "Campus Student",
       email: user.email,
       bloodGroup: bloodGroupInput.value,
       phone: phoneInput.value,
@@ -160,149 +156,172 @@ function getEligibilityStatus(lastDonatedString) {
     return { eligible: true, label: "Eligible to donate" };
   } else {
     const daysLeft = 90 - diffDays;
-    return { eligible: false, label: `Ineligible (${daysLeft} days wait remaining)` };
+    return { eligible: false, label: `Ineligible (${daysLeft}d remaining)` };
   }
 }
 
-// --- 4. Donor Directory ---
+// --- 4. Filterable Donor Directory ---
 
 async function loadDonors() {
   donorsList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px;">Loading donors list...</p>`;
 
   try {
-    const querySnapshot = await getDocs(collection(db, "donors"));
-    donorsList.innerHTML = "";
+    const q = query(collection(db, "donors"), where("isAvailable", "==", true));
+    const querySnapshot = await getDocs(q);
+    
+    cachedDonors = [];
+    querySnapshot.forEach(docSnap => cachedDonors.push(docSnap.data()));
 
-    let activeCount = 0;
-
-    querySnapshot.forEach((docSnap) => {
-      const donor = docSnap.data();
-      if (donor.isAvailable === false) return;
-
-      activeCount++;
-      const status = getEligibilityStatus(donor.lastDonated);
-      const statusClass = status.eligible ? "status-eligible" : "status-ineligible";
-
-      const card = document.createElement("div");
-      card.className = "donor-card";
-      card.innerHTML = `
-        <div class="donor-header">
-          <span class="donor-name">${donor.name}</span>
-          <span class="blood-badge">${donor.bloodGroup}</span>
-        </div>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
-          <strong>Phone:</strong> <a href="tel:${donor.phone}" style="color: var(--primary); text-decoration: none;">${donor.phone}</a>
-        </p>
-        <div>
-          <span class="status-badge ${statusClass}">${status.label}</span>
-        </div>
-      `;
-      donorsList.appendChild(card);
-    });
-
-    if (activeCount === 0) {
-      donorsList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px;">No active donors available right now.</p>`;
-    }
+    renderDonors();
   } catch (error) {
     console.error("Error fetching donors:", error);
     donorsList.innerHTML = `<p style="color: #ef5350; font-size: 14px;">Failed to load donors.</p>`;
   }
 }
 
-// --- 5. Urgent Request Module ---
+function renderDonors() {
+  const selectedBg = filterBloodGroup.value;
+  const selectedEligibility = filterEligibility.value;
 
-openUrgentModalBtn.addEventListener("click", () => {
-  urgentFormCard.classList.remove("hidden");
-});
+  donorsList.innerHTML = "";
+  let count = 0;
 
-cancelUrgentBtn.addEventListener("click", () => {
-  urgentFormCard.classList.add("hidden");
-});
+  cachedDonors.forEach((donor) => {
+    if (selectedBg !== "ALL" && donor.bloodGroup !== selectedBg) return;
+
+    const status = getEligibilityStatus(donor.lastDonated);
+    if (selectedEligibility === "ELIGIBLE" && !status.eligible) return;
+
+    count++;
+    const statusClass = status.eligible ? "status-eligible" : "status-ineligible";
+
+    const card = document.createElement("div");
+    card.className = "donor-card";
+    card.innerHTML = `
+      <div class="donor-header">
+        <span class="donor-name">${donor.name}</span>
+        <span class="blood-badge">${donor.bloodGroup}</span>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+        <strong>Phone:</strong> <a href="tel:${donor.phone}" style="color: var(--primary); text-decoration: none; font-weight: 600;">${donor.phone}</a>
+      </p>
+      <div>
+        <span class="status-badge ${statusClass}">${status.label}</span>
+      </div>
+    `;
+    donorsList.appendChild(card);
+  });
+
+  if (count === 0) {
+    donorsList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">No matching available donors found.</p>`;
+  }
+}
+
+filterBloodGroup.addEventListener("change", renderDonors);
+filterEligibility.addEventListener("change", renderDonors);
+
+// --- 5. Urgent Emergency Requests (Auto-Expiry 48h) ---
+
+openUrgentModalBtn.addEventListener("click", () => urgentFormCard.classList.remove("hidden"));
+cancelUrgentBtn.addEventListener("click", () => urgentFormCard.classList.add("hidden"));
 
 urgentForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const user = auth.currentUser;
   if (!user) return;
-  
-  const bloodGroup = document.getElementById("urgentBloodGroup").value;
-  const hospital = document.getElementById("urgentHospital").value;
-  const phone = document.getElementById("urgentPhone").value;
 
   try {
     await addDoc(collection(db, "urgent_requests"), {
-      bloodGroup,
-      hospital,
-      phone,
+      bloodGroup: document.getElementById("urgentBloodGroup").value,
+      hospital: document.getElementById("urgentHospital").value,
+      phone: document.getElementById("urgentPhone").value,
       postedByUid: user.uid,
       postedByEmail: user.email,
-      createdAt: new Date()
+      createdAt: new Date().toISOString()
     });
 
     alert("Urgent request broadcasted!");
     urgentForm.reset();
     urgentFormCard.classList.add("hidden");
-    await loadUrgentBanner();
+    await loadUrgentFeed();
   } catch (error) {
     console.error("Error posting urgent request:", error);
     alert("Could not post request.");
   }
 });
 
-async function loadUrgentBanner() {
+async function loadUrgentFeed() {
+  if (!urgentFeed) return;
+
   try {
-    const q = query(collection(db, "urgent_requests"), orderBy("createdAt", "desc"), limit(1));
+    const q = query(collection(db, "urgent_requests"), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
-      const docSnap = querySnapshot.docs[0];
+    urgentFeed.innerHTML = "";
+    const currentUser = auth.currentUser;
+    const now = new Date();
+
+    querySnapshot.forEach((docSnap) => {
       const req = docSnap.data();
       const reqId = docSnap.id;
-      const currentUser = auth.currentUser;
 
-      urgentDetails.innerHTML = `
-        <p style="margin-bottom: 4px;"><strong>Blood Group Needed:</strong> <span style="font-size: 16px; font-weight: bold;">${req.bloodGroup}</span></p>
-        <p style="margin-bottom: 4px;"><strong>Location:</strong> ${req.hospital}</p>
-        <p style="margin-bottom: 4px;"><strong>Contact Immediately:</strong> <a href="tel:${req.phone}" style="color: #991b1b; font-weight: bold;">${req.phone}</a></p>
-        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Posted by: ${req.postedByEmail || "Campus Student"}</p>
+      // Auto-Expiry Logic: Hide requests older than 48 hours
+      const createdDate = new Date(req.createdAt);
+      const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
+      if (hoursDiff > 48) return;
+
+      const isOwner = currentUser && req.postedByUid && req.postedByUid === currentUser.uid;
+
+      const card = document.createElement("div");
+      card.className = "urgent-banner";
+      card.id = `urgent-card-${reqId}`;
+
+      card.innerHTML = `
+        <div class="flex-between" style="margin-bottom: 8px;">
+          <div class="urgent-header"><span>🚨</span> URGENT BLOOD NEEDED</div>
+          <div id="actions-${reqId}"></div>
+        </div>
+        <div>
+          <p style="margin-bottom: 4px;"><strong>Blood Group:</strong> <span style="font-size: 16px; font-weight: 700;">${req.bloodGroup}</span></p>
+          <p style="margin-bottom: 4px;"><strong>Location:</strong> ${req.hospital}</p>
+          <p style="margin-bottom: 4px;"><strong>Contact:</strong> <a href="tel:${req.phone}" style="color: #991b1b; font-weight: 700;">${req.phone}</a></p>
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Posted by: ${req.postedByEmail || "Campus Student"}</p>
+        </div>
       `;
 
-      urgentActions.innerHTML = "";
+      urgentFeed.appendChild(card);
 
-      // Creator sees "Mark Fulfilled & Remove", viewers see "Dismiss"
-      if (currentUser && req.postedByUid === currentUser.uid) {
+      const actionsContainer = document.getElementById(`actions-${reqId}`);
+      if (isOwner) {
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "btn";
         deleteBtn.style.cssText = "background-color: #16a34a; font-size: 12px; padding: 6px 12px;";
-        deleteBtn.textContent = "✓ Mark Fulfilled & Remove";
-        deleteBtn.onclick = () => deleteUrgentRequest(reqId);
-        urgentActions.appendChild(deleteBtn);
+        deleteBtn.textContent = "✓ Mark Fulfilled";
+        deleteBtn.onclick = () => window.deleteUrgentRequest(reqId);
+        actionsContainer.appendChild(deleteBtn);
       } else {
         const dismissBtn = document.createElement("button");
         dismissBtn.className = "btn btn-secondary";
         dismissBtn.style.cssText = "font-size: 12px; padding: 6px 12px;";
         dismissBtn.textContent = "Dismiss";
-        dismissBtn.onclick = () => urgentBanner.classList.add("hidden");
-        urgentActions.appendChild(dismissBtn);
+        dismissBtn.onclick = () => card.remove();
+        actionsContainer.appendChild(dismissBtn);
       }
-
-      urgentBanner.classList.remove("hidden");
-    } else {
-      urgentBanner.classList.add("hidden");
-    }
+    });
   } catch (error) {
-    console.error("Error loading urgent request:", error);
+    console.error("Error loading emergency feed:", error);
   }
 }
 
-async function deleteUrgentRequest(requestId) {
-  if (!confirm("Has this blood request been fulfilled? Clicking OK will remove this alert for everyone.")) return;
+window.deleteUrgentRequest = async function(requestId) {
+  if (!confirm("Has this request been fulfilled? Clicking OK will remove it for everyone.")) return;
 
   try {
     await deleteDoc(doc(db, "urgent_requests", requestId));
-    alert("Urgent request removed successfully!");
-    urgentBanner.classList.add("hidden");
+    const card = document.getElementById(`urgent-card-${requestId}`);
+    if (card) card.remove();
   } catch (error) {
-    console.error("Error deleting urgent request:", error);
-    alert("Failed to delete the request.");
+    console.error("Error deleting request:", error);
+    alert("Failed to delete request.");
   }
-}
+};

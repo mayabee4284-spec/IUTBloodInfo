@@ -4,11 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IUT Blood Donor Portal</title>
-  <!-- Google Inter Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <style>
     :root {
       --primary: #dc2626;
@@ -21,118 +20,94 @@
       --border: #e2e8f0;
       --success: #16a34a;
       --success-bg: #f0fdf4;
-      --warning-bg: #fffbeb;
-      --warning-text: #b45309;
       --radius: 12px;
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 24px 16px; }
-    .container { max-width: 860px; margin: 0 auto; }
-
-    /* Header & Branding */
-    header { text-align: center; margin-bottom: 32px; }
-    .logo-badge { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: var(--primary-light); color: var(--primary); border-radius: 50%; font-size: 24px; margin-bottom: 12px; }
-    h1 { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
-    header p { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
-
-    /* Cards */
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
-    .card-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
-
-    /* Forms */
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group.full-width { grid-column: 1 / -1; }
-    label { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    input, select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; color: var(--text); background: var(--surface); transition: all 0.2s; outline: none; }
-    input:focus, select:focus { border-color: var(--primary); }
-    
-    /* Toggle Switch */
-    .switch-container { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); }
-
-    /* Buttons */
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; text-decoration: none; }
-    .btn:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #e2e8f0; color: var(--text); }
-    .btn-secondary:hover { background: #cbd5e1; }
-
-    /* Urgent Request Banner */
-    .urgent-banner { background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
-    .urgent-header { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 16px; }
-    .urgent-body { font-size: 14px; color: #7f1d1d; margin-top: 10px; }
-
-    /* Donor Grid */
-    .donor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
-    .donor-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; transition: transform 0.2s, box-shadow 0.2s; }
-    .donor-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-    .donor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .blood-badge { background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 16px; padding: 4px 10px; border-radius: 6px; }
-    .donor-name { font-weight: 600; font-size: 15px; }
-    .status-badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 20px; margin-top: 8px; }
-    .status-eligible { background: var(--success-bg); color: var(--success); }
-    .status-ineligible { background: var(--warning-bg); color: var(--warning-text); }
-
-    /* Utilities */
+    body { background-color: var(--bg); color: var(--text); padding: 20px; max-width: 900px; margin: 0 auto; }
     .hidden { display: none !important; }
-    .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    header { text-align: center; margin-bottom: 24px; padding-top: 10px; }
+    .logo-icon { width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 20px; }
+    h1 { font-size: 24px; font-weight: 700; color: var(--text); }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
+    .auth-card { text-align: center; max-width: 400px; margin: 40px auto; }
+
+    .btn { background-color: var(--primary); color: white; border: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:hover { background-color: var(--primary-hover); }
+    .btn-secondary { background-color: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background-color: #f1f5f9; }
+
+    /* Feed Container styling with max-height overflow */
+    #urgentFeed { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+
+    .urgent-banner { background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); padding: 16px; color: #991b1b; }
+    .urgent-header { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .form-group { margin-bottom: 16px; text-align: left; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
+    input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+    .donors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+    .donor-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+    .donor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .donor-name { font-weight: 600; font-size: 15px; }
+    .blood-badge { background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+    .status-badge { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 20px; display: inline-block; }
+    .status-eligible { background: #dcfce7; color: #15803d; }
+    .status-ineligible { background: #fef3c7; color: #b45309; }
+
+    .filter-bar { display: flex; gap: 12px; align-items: center; background: white; padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-bar select { width: auto; flex: 1; min-width: 140px; }
   </style>
 </head>
 <body>
 
-<div class="container">
-
-  <!-- Header -->
   <header>
-    <div class="logo-badge">🩸</div>
+    <div class="logo-icon">🩸</div>
     <h1>IUT Blood Donor Portal</h1>
-    <p>A unified campus network for blood donation</p>
+    <p class="subtitle">A unified campus network for blood donation</p>
   </header>
 
-  <!-- Login Card -->
-  <div id="authSection" class="card" style="text-align: center;">
-    <h2 style="font-size: 20px; margin-bottom: 8px;">Welcome Back</h2>
-    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Please sign in using your official university email to continue.</p>
-    <button id="loginBtn" class="btn" style="margin: 0 auto;">Sign in with Google</button>
+  <!-- Login Section -->
+  <div id="authSection" class="card auth-card">
+    <h2 style="font-size: 18px; margin-bottom: 8px;">Welcome Back</h2>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Please sign in using your official university email to continue.</p>
+    <button id="loginBtn" class="btn" style="width: 100%;">Sign in with Google</button>
   </div>
 
-  <!-- Authenticated Header Toolbar -->
-  <div id="userInfo" class="card flex-between hidden" style="padding: 16px 20px;">
-    <div>
-      <span style="font-size: 12px; color: var(--text-muted); display: block;">Signed in as</span>
-      <strong id="userEmail" style="font-size: 14px;"></strong>
-    </div>
-    <button id="logoutBtn" class="btn btn-secondary">Sign Out</button>
+  <!-- Signed In User Bar -->
+  <div id="userInfo" class="card flex-between hidden" style="padding: 12px 20px; margin-bottom: 20px;">
+    <span style="font-size: 13px; color: var(--text-muted);">Signed in as <strong id="userEmail" style="color: var(--text);"></strong></span>
+    <button id="logoutBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Sign Out</button>
   </div>
 
-  <!-- Main Application Content -->
+  <!-- Main App Content -->
   <div id="appContent" class="hidden">
 
-    <!-- 1. Urgent Blood Need Banner -->
-    <div id="urgentBanner" class="urgent-banner hidden">
-      <div class="flex-between">
-        <div class="urgent-header">
-          <span>🚨</span> URGENT BLOOD NEEDED
-        </div>
-        <div id="urgentActions"></div>
-      </div>
-      <div id="urgentDetails" class="urgent-body"></div>
+    <!-- Emergency Requests Feed -->
+    <div id="urgentFeed"></div>
+
+    <div class="flex-between" style="margin-bottom: 16px;">
+      <h2 style="font-size: 18px; font-weight: 700;">Dashboard</h2>
+      <button id="openUrgentModalBtn" class="btn">+ Post Emergency Need</button>
     </div>
 
-    <!-- Actions Bar -->
-    <div class="flex-between" style="margin-bottom: 24px;">
-      <h2 style="font-size: 20px; font-weight: 600;">Dashboard</h2>
-      <button id="openUrgentModalBtn" class="btn" style="background-color: #991b1b;">+ Post Emergency Need</button>
-    </div>
-
-    <!-- Urgent Request Form Card -->
-    <div id="urgentFormCard" class="card hidden" style="border-color: #fca5a5;">
-      <div class="card-title" style="color: #991b1b;">Post Emergency Request</div>
+    <!-- Create Emergency Request Form Card -->
+    <div id="urgentFormCard" class="card hidden" style="border-left: 4px solid var(--primary);">
+      <h3 style="font-size: 16px; margin-bottom: 12px;">Post Emergency Need</h3>
       <form id="urgentForm">
-        <div class="form-grid">
+        <div class="grid-2">
           <div class="form-group">
-            <label for="urgentBloodGroup">Required Blood Group</label>
+            <label>Required Blood Group</label>
             <select id="urgentBloodGroup" required>
               <option value="A+">A+</option><option value="A-">A-</option>
               <option value="B+">B+</option><option value="B-">B-</option>
@@ -141,31 +116,29 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="urgentPhone">Contact Phone Number</label>
-            <input type="tel" id="urgentPhone" placeholder="01XXXXXXXXX" required>
-          </div>
-          <div class="form-group full-width">
-            <label for="urgentHospital">Hospital / Campus Location</label>
-            <input type="text" id="urgentHospital" placeholder="e.g. Enam Medical College / Medical Center" required>
+            <label>Hospital / Location</label>
+            <input type="text" id="urgentHospital" placeholder="e.g. Chittagong Medical Centre" required>
           </div>
         </div>
-        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <div class="form-group">
+          <label>Contact Phone Number</label>
+          <input type="tel" id="urgentPhone" placeholder="017XXXXXXXX" required>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
           <button type="button" id="cancelUrgentBtn" class="btn btn-secondary">Cancel</button>
-          <button type="submit" class="btn">Broadcast Urgently</button>
+          <button type="submit" class="btn">Broadcast Request</button>
         </div>
       </form>
     </div>
 
-    <!-- 2. Profile Setup Card -->
+    <!-- My Profile Section -->
     <div class="card">
-      <div class="card-title">
-        <span>My Donor Profile</span>
-      </div>
+      <h3 style="font-size: 16px; margin-bottom: 16px;">My Donor Profile</h3>
       <form id="profileForm">
-        <div class="form-grid">
+        <div class="grid-2">
           <div class="form-group">
-            <label for="bloodGroup">Blood Group</label>
-            <select id="bloodGroup" required>
+            <label>Blood Group</label>
+            <select id="bloodGroup">
               <option value="A+">A+</option><option value="A-">A-</option>
               <option value="B+">B+</option><option value="B-">B-</option>
               <option value="O+">O+</option><option value="O-">O-</option>
@@ -173,39 +146,49 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" placeholder="01XXXXXXXXX" required>
+            <label>Phone Number</label>
+            <input type="tel" id="phone" placeholder="017XXXXXXXX" required>
           </div>
-          <div class="form-group full-width">
-            <label for="lastDonated">Last Donated Date (Leave blank if never)</label>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Last Donated Date (Leave blank if never)</label>
             <input type="date" id="lastDonated">
           </div>
+          <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 24px;">
+            <input type="checkbox" id="isAvailable" style="width: auto;" checked>
+            <label for="isAvailable" style="margin-bottom: 0; cursor: pointer;">Available for Emergency Calls</label>
+          </div>
         </div>
-
-        <div class="switch-container" style="margin-bottom: 20px;">
-          <input type="checkbox" id="isAvailable" style="width: 18px; height: 18px; accent-color: var(--primary);" checked>
-          <label for="isAvailable" style="cursor: pointer; text-transform: none; color: var(--text); font-size: 14px;">
-            Available to donate blood immediately
-          </label>
-        </div>
-
-        <button type="submit" class="btn">Update Profile</button>
+        <button type="submit" class="btn" style="margin-top: 8px;">Save Profile</button>
       </form>
     </div>
 
-    <!-- 3. Available Donors Directory -->
-    <div class="card">
-      <div class="card-title">
-        <span>Active Campus Donors</span>
+    <!-- Donor Directory Section -->
+    <div style="margin-top: 32px;">
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Campus Donor Directory</h3>
+      
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Filter By:</span>
+        <select id="filterBloodGroup">
+          <option value="ALL">All Blood Groups</option>
+          <option value="A+">A+</option><option value="A-">A-</option>
+          <option value="B+">B+</option><option value="B-">B-</option>
+          <option value="O+">O+</option><option value="O-">O-</option>
+          <option value="AB+">AB+</option><option value="AB-">AB-</option>
+        </select>
+        <select id="filterEligibility">
+          <option value="ALL">All Availability</option>
+          <option value="ELIGIBLE">Eligible Donors Only (90+ Days)</option>
+        </select>
       </div>
-      <div id="donorsList" class="donor-grid">
-        <p style="color: var(--text-muted); font-size: 14px;">Loading donors list...</p>
-      </div>
+
+      <div id="donorsList" class="donors-grid"></div>
     </div>
 
   </div>
-</div>
 
-<script type="module" src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
