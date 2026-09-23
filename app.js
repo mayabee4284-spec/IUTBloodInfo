@@ -1,4 +1,5 @@
 
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
   getAuth, 
@@ -20,7 +21,6 @@ import {
   where,
   orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
 // Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDOENSjDoRlXCeO3xYfN7h1LnIxxrWHHHY",
@@ -32,6 +32,7 @@ const firebaseConfig = {
   measurementId: "G-K9RVCN91WT"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -66,43 +67,74 @@ const urgentForm = document.getElementById("urgentForm");
 const cancelUrgentBtn = document.getElementById("cancelUrgentBtn");
 
 let cachedDonors = [];
+let isLoggingIn = false;
 
-// Aggressively strip any numeric IDs or digits from student display names
+// Helper: Aggressively strip digits/student IDs from names
 function cleanStudentName(rawName, email) {
-  let name = rawName || email.split("@")[0];
-  
-  // Remove all numbers/digits entirely (e.g. 240041219)
+  let name = rawName || (email ? email.split("@")[0] : "");
+  if (!name) return "IUT Student";
+
+  // Remove all numeric sequences (e.g. 240041219)
   name = name.replace(/\d+/g, "").trim();
   
-  // Remove leftover symbols like underscores, hyphens, periods
+  // Remove leftover symbols like underscores, hyphens, or periods
   name = name.replace(/[._-]+/g, " ").trim();
   
-  // Clean up double spaces created by string replacement
+  // Clean double spaces
   name = name.replace(/\s+/g, " ");
   
   // Capitalize each word properly
   return name.replace(/\b\w/g, char => char.toUpperCase()) || "IUT Student";
 }
 
-// --- 1. Auth Handlers ---
+// --- 1. Authentication Flow ---
 
 loginBtn.addEventListener("click", async () => {
+  if (isLoggingIn) return;
+  
+  isLoggingIn = true;
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Connecting to Google...";
+
   try {
     const result = await signInWithPopup(auth, provider);
-    if (!result.user.email.endsWith(ALLOWED_DOMAIN)) {
-      alert(`Please sign in with your official university email ending in ${ALLOWED_DOMAIN}`);
+    const user = result.user;
+
+    if (!user.email || !user.email.endsWith(ALLOWED_DOMAIN)) {
+      alert(`Access Restricted: Please sign in with an official university email ending in ${ALLOWED_DOMAIN}`);
       await signOut(auth);
     }
   } catch (error) {
-    console.error("Login Error:", error);
-    alert("Login failed: " + error.message);
+    console.error("Auth Error:", error);
+    
+    // Provide user-friendly feedback based on standard Firebase error codes
+    if (error.code === "auth/popup-closed-by-user") {
+      // User closed popup; silent reset
+    } else if (error.code === "auth/unauthorized-domain") {
+      alert("Domain Authorization Error: Please ensure 'iut-blood-info.vercel.app' is added to Firebase Auth Authorized Domains.");
+    } else if (error.code?.includes("requests-from-referer")) {
+      alert("API Restriction Error: Your Google Cloud Key restricts requests from this URL.");
+    } else {
+      alert(`Login failed: ${error.message}`);
+    }
+  } finally {
+    isLoggingIn = false;
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Sign in with Google";
   }
 });
 
-logoutBtn.addEventListener("click", () => signOut(auth));
+logoutBtn.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Signout Error:", error);
+  }
+});
 
+// Primary auth observer listener
 onAuthStateChanged(auth, async (user) => {
-  if (user && user.email.endsWith(ALLOWED_DOMAIN)) {
+  if (user && user.email && user.email.endsWith(ALLOWED_DOMAIN)) {
     authSection.classList.add("hidden");
     userInfo.classList.remove("hidden");
     appContent.classList.remove("hidden");
@@ -110,10 +142,14 @@ onAuthStateChanged(auth, async (user) => {
     const cleanName = cleanStudentName(user.displayName, user.email);
     userNameSpan.textContent = cleanName;
 
-    await loadUserProfile(user.uid);
-    await loadDonors();
-    await loadUrgentFeed();
+    // Load data concurrently
+    await Promise.all([
+      loadUserProfile(user.uid),
+      loadDonors(),
+      loadUrgentFeed()
+    ]);
   } else {
+    // Unauthenticated state
     authSection.classList.remove("hidden");
     userInfo.classList.add("hidden");
     appContent.classList.add("hidden");
@@ -135,7 +171,7 @@ async function loadUserProfile(uid) {
       isAvailableInput.checked = data.isAvailable !== false;
     }
   } catch (error) {
-    console.error("Error loading profile:", error);
+    console.error("Error loading user profile:", error);
   }
 }
 
@@ -145,14 +181,18 @@ profileForm.addEventListener("submit", async (e) => {
   if (!user) return;
 
   const displayNameClean = cleanStudentName(user.displayName, user.email);
+  const submitBtn = profileForm.querySelector("button[type='submit']");
+  
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Saving...";
 
   try {
     await setDoc(doc(db, "donors", user.uid), {
       name: displayNameClean,
-      dept: deptInput.value,
-      batch: batchInput.value,
+      dept: deptInput.value.trim(),
+      batch: batchInput.value.trim(),
       bloodGroup: bloodGroupInput.value,
-      phone: phoneInput.value,
+      phone: phoneInput.value.trim(),
       lastDonated: lastDonatedInput.value,
       isAvailable: isAvailableInput.checked,
       updatedAt: new Date()
@@ -162,7 +202,10 @@ profileForm.addEventListener("submit", async (e) => {
     await loadDonors();
   } catch (error) {
     console.error("Error saving profile:", error);
-    alert("Failed to save profile.");
+    alert("Failed to save profile. Check connection.");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Save Profile";
   }
 });
 
@@ -178,7 +221,7 @@ function getEligibilityStatus(lastDonatedString) {
   const diffTime = today - lastDonated;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays >= 90) {
+  if (isNaN(diffDays) || diffDays >= 90) {
     return { eligible: true, label: "Eligible to donate" };
   } else {
     const daysLeft = 90 - diffDays;
@@ -189,7 +232,7 @@ function getEligibilityStatus(lastDonatedString) {
 // --- 4. Donor Directory & Filters ---
 
 async function loadDonors() {
-  donorsList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px;">Loading donors list...</p>`;
+  donorsList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">Loading donors directory...</p>`;
 
   try {
     const q = query(collection(db, "donors"), where("isAvailable", "==", true));
@@ -201,7 +244,7 @@ async function loadDonors() {
     renderDonors();
   } catch (error) {
     console.error("Error fetching donors:", error);
-    donorsList.innerHTML = `<p style="color: #ef5350; font-size: 14px;">Failed to load donors.</p>`;
+    donorsList.innerHTML = `<p style="color: #ef5350; font-size: 14px; grid-column: 1/-1;">Failed to load donor list.</p>`;
   }
 }
 
@@ -221,26 +264,24 @@ function renderDonors() {
     count++;
     const statusClass = status.eligible ? "status-eligible" : "status-ineligible";
     
-    // Aggressively clean name on render as well in case old database data contains numbers
+    // Format display attributes safely
     const cleanName = cleanStudentName(donor.name, "");
     const deptBatchText = donor.dept && donor.batch ? `${donor.dept} (${donor.batch})` : (donor.dept || donor.batch || "");
+    const phoneDisplay = donor.phone 
+      ? `<a href="tel:${donor.phone}" style="color: var(--primary); text-decoration: none; font-weight: 600;">${donor.phone}</a>`
+      : `<span style="color: var(--text-muted); font-style: italic;">Not Provided</span>`;
 
     const card = document.createElement("div");
     card.className = "donor-card";
     card.innerHTML = `
       <div class="donor-header">
         <span class="donor-name">${cleanName}</span>
-        <span class="blood-badge">${donor.bloodGroup}</span>
+        <span class="blood-badge">${donor.bloodGroup || 'N/A'}</span>
       </div>
       ${deptBatchText ? `<div class="donor-sub">${deptBatchText}</div>` : ''}
-     const phoneDisplay = donor.phone 
-  ? `<a href="tel:${donor.phone}" style="color: var(--primary); text-decoration: none; font-weight: 600;">${donor.phone}</a>`
-  : `<span style="color: var(--text-muted); font-style: italic;">Not Provided</span>`;
-
-// Inside the card innerHTML:
-<p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
-  <strong>Phone:</strong> ${phoneDisplay}
-</p>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+        <strong>Phone:</strong> ${phoneDisplay}
+      </p>
       <div>
         <span class="status-badge ${statusClass}">${status.label}</span>
       </div>
@@ -256,7 +297,7 @@ function renderDonors() {
 filterBloodGroup.addEventListener("change", renderDonors);
 filterEligibility.addEventListener("change", renderDonors);
 
-// --- 5. Emergency Feed ---
+// --- 5. Emergency Requests Feed ---
 
 function getDismissedRequests() {
   return JSON.parse(localStorage.getItem("dismissed_urgent_requests") || "[]");
@@ -279,24 +320,29 @@ urgentForm.addEventListener("submit", async (e) => {
   if (!user) return;
 
   const cleanPosterName = cleanStudentName(user.displayName, user.email);
+  const submitBtn = urgentForm.querySelector("button[type='submit']");
+  
+  submitBtn.disabled = true;
 
   try {
     await addDoc(collection(db, "urgent_requests"), {
       bloodGroup: document.getElementById("urgentBloodGroup").value,
-      hospital: document.getElementById("urgentHospital").value,
-      phone: document.getElementById("urgentPhone").value,
+      hospital: document.getElementById("urgentHospital").value.trim(),
+      phone: document.getElementById("urgentPhone").value.trim(),
       postedByUid: user.uid,
       postedByName: cleanPosterName,
       createdAt: new Date().toISOString()
     });
 
-    alert("Urgent request broadcasted!");
+    alert("Urgent request broadcasted successfully!");
     urgentForm.reset();
     urgentFormCard.classList.add("hidden");
     await loadUrgentFeed();
   } catch (error) {
     console.error("Error posting urgent request:", error);
-    alert("Could not post request.");
+    alert("Could not post request. Check Firestore permissions.");
+  } finally {
+    submitBtn.disabled = false;
   }
 });
 
@@ -320,6 +366,8 @@ async function loadUrgentFeed() {
 
       const createdDate = new Date(req.createdAt);
       const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
+      
+      // Auto-expire requests older than 48 hours
       if (hoursDiff > 48) return;
 
       const isOwner = currentUser && req.postedByUid && req.postedByUid === currentUser.uid;
