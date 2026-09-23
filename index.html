@@ -41,7 +41,7 @@
     .btn-secondary { background-color: transparent; color: var(--text); border: 1px solid var(--border); }
     .btn-secondary:hover { background-color: #f1f5f9; }
 
-    /* Feed Container styling with max-height overflow */
+    /* Scrollable Feed Container for multiple emergency alerts */
     #urgentFeed { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
 
     .urgent-banner { background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); padding: 16px; color: #991b1b; }
@@ -93,7 +93,7 @@
   <!-- Main App Content -->
   <div id="appContent" class="hidden">
 
-    <!-- Emergency Requests Feed -->
+    <!-- Emergency Requests Feed Container -->
     <div id="urgentFeed"></div>
 
     <div class="flex-between" style="margin-bottom: 16px;">
@@ -101,7 +101,7 @@
       <button id="openUrgentModalBtn" class="btn">+ Post Emergency Need</button>
     </div>
 
-    <!-- Create Emergency Request Form Card -->
+    <!-- Create Emergency Request Modal/Form -->
     <div id="urgentFormCard" class="card hidden" style="border-left: 4px solid var(--primary);">
       <h3 style="font-size: 16px; margin-bottom: 12px;">Post Emergency Need</h3>
       <form id="urgentForm">

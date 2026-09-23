@@ -22,6 +22,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Firebase Configuration
+
 const firebaseConfig = {
   apiKey: "AIzaSyDOENSjDoRlXCeO3xYfN7h1LnIxxrWHHHY",
   authDomain: "iutbloodinfo.firebaseapp.com",
@@ -31,7 +32,7 @@ const firebaseConfig = {
   appId: "1:219192835330:web:bf2eaba4a19e064541161b",
   measurementId: "G-K9RVCN91WT"
 };
-
+// Initialize Firebase Services
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -71,7 +72,7 @@ loginBtn.addEventListener("click", async () => {
   try {
     const result = await signInWithPopup(auth, provider);
     if (!result.user.email.endsWith(ALLOWED_DOMAIN)) {
-      alert(`Please sign in with your university email ending in ${ALLOWED_DOMAIN}`);
+      alert(`Please sign in with your official university email ending in ${ALLOWED_DOMAIN}`);
       await signOut(auth);
     }
   } catch (error) {
@@ -160,7 +161,7 @@ function getEligibilityStatus(lastDonatedString) {
   }
 }
 
-// --- 4. Filterable Donor Directory ---
+// --- 4. Donor Directory & Filters ---
 
 async function loadDonors() {
   donorsList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px;">Loading donors list...</p>`;
@@ -220,7 +221,19 @@ function renderDonors() {
 filterBloodGroup.addEventListener("change", renderDonors);
 filterEligibility.addEventListener("change", renderDonors);
 
-// --- 5. Urgent Emergency Requests (Auto-Expiry 48h) ---
+// --- 5. Urgent Emergency Feed & Persistent Local Dismissal ---
+
+function getDismissedRequests() {
+  return JSON.parse(localStorage.getItem("dismissed_urgent_requests") || "[]");
+}
+
+function dismissRequestLocally(requestId) {
+  const dismissed = getDismissedRequests();
+  if (!dismissed.includes(requestId)) {
+    dismissed.push(requestId);
+    localStorage.setItem("dismissed_urgent_requests", JSON.stringify(dismissed));
+  }
+}
 
 openUrgentModalBtn.addEventListener("click", () => urgentFormCard.classList.remove("hidden"));
 cancelUrgentBtn.addEventListener("click", () => urgentFormCard.classList.add("hidden"));
@@ -260,12 +273,16 @@ async function loadUrgentFeed() {
     urgentFeed.innerHTML = "";
     const currentUser = auth.currentUser;
     const now = new Date();
+    const dismissedList = getDismissedRequests();
 
     querySnapshot.forEach((docSnap) => {
       const req = docSnap.data();
       const reqId = docSnap.id;
 
-      // Auto-Expiry Logic: Hide requests older than 48 hours
+      // 1. Skip if locally dismissed
+      if (dismissedList.includes(reqId)) return;
+
+      // 2. Skip requests older than 48 hours
       const createdDate = new Date(req.createdAt);
       const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
       if (hoursDiff > 48) return;
@@ -304,7 +321,10 @@ async function loadUrgentFeed() {
         dismissBtn.className = "btn btn-secondary";
         dismissBtn.style.cssText = "font-size: 12px; padding: 6px 12px;";
         dismissBtn.textContent = "Dismiss";
-        dismissBtn.onclick = () => card.remove();
+        dismissBtn.onclick = () => {
+          dismissRequestLocally(reqId);
+          card.remove();
+        };
         actionsContainer.appendChild(dismissBtn);
       }
     });
@@ -313,6 +333,7 @@ async function loadUrgentFeed() {
   }
 }
 
+// Global deletion function attached to window scope
 window.deleteUrgentRequest = async function(requestId) {
   if (!confirm("Has this request been fulfilled? Clicking OK will remove it for everyone.")) return;
 
