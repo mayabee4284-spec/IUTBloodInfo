@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
   getAuth, 
@@ -22,7 +21,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Firebase Configuration
-
 const firebaseConfig = {
   apiKey: "AIzaSyDOENSjDoRlXCeO3xYfN7h1LnIxxrWHHHY",
   authDomain: "iutbloodinfo.firebaseapp.com",
@@ -32,6 +30,7 @@ const firebaseConfig = {
   appId: "1:219192835330:web:bf2eaba4a19e064541161b",
   measurementId: "G-K9RVCN91WT"
 };
+
 // Initialize Firebase Services
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);

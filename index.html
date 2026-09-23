@@ -18,8 +18,6 @@
       --text: #0f172a;
       --text-muted: #64748b;
       --border: #e2e8f0;
-      --success: #16a34a;
-      --success-bg: #f0fdf4;
       --radius: 12px;
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     }
@@ -41,7 +39,6 @@
     .btn-secondary { background-color: transparent; color: var(--text); border: 1px solid var(--border); }
     .btn-secondary:hover { background-color: #f1f5f9; }
 
-    /* Scrollable Feed Container for multiple emergency alerts */
     #urgentFeed { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
 
     .urgent-banner { background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); padding: 16px; color: #991b1b; }
@@ -60,6 +57,7 @@
     .donor-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
     .donor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .donor-name { font-weight: 600; font-size: 15px; }
+    .donor-sub { font-size: 12px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px; }
     .blood-badge { background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 12px; padding: 4px 8px; border-radius: 6px; }
     .status-badge { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 20px; display: inline-block; }
     .status-eligible { background: #dcfce7; color: #15803d; }
@@ -86,7 +84,7 @@
 
   <!-- Signed In User Bar -->
   <div id="userInfo" class="card flex-between hidden" style="padding: 12px 20px; margin-bottom: 20px;">
-    <span style="font-size: 13px; color: var(--text-muted);">Signed in as <strong id="userEmail" style="color: var(--text);"></strong></span>
+    <span style="font-size: 13px; color: var(--text-muted);">Signed in as <strong id="userName" style="color: var(--text);"></strong></span>
     <button id="logoutBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Sign Out</button>
   </div>
 
@@ -135,6 +133,23 @@
     <div class="card">
       <h3 style="font-size: 16px; margin-bottom: 16px;">My Donor Profile</h3>
       <form id="profileForm">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Department</label>
+            <select id="dept" required>
+              <option value="CSE">CSE</option>
+              <option value="EEE">EEE</option>
+              <option value="SWE">SWE</option>
+              <option value="ME">ME</option>
+              <option value="CEE">CEE</option>
+              <option value="BTM">BTM</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Batch</label>
+            <input type="text" id="batch" placeholder="e.g. Batch '20 / '21" required>
+          </div>
+        </div>
         <div class="grid-2">
           <div class="form-group">
             <label>Blood Group</label>
