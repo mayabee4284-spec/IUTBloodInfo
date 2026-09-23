@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IUT Blood Donor Portal</title>
-  <!-- Modern clean font -->
+  <!-- Google Inter Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -47,23 +47,21 @@
     .form-group.full-width { grid-column: 1 / -1; }
     label { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
     input, select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; color: var(--text); background: var(--surface); transition: all 0.2s; outline: none; }
-    input:focus, select:focus { border-color: var(--primary); box-ring: 0 0 0 3px rgba(220, 38, 38, 0.15); }
+    input:focus, select:focus { border-color: var(--primary); }
     
     /* Toggle Switch */
     .switch-container { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); }
-    .switch-container span { font-size: 14px; font-weight: 500; }
 
     /* Buttons */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; text-decoration: none; }
     .btn:hover { background: var(--primary-hover); }
     .btn-secondary { background: #e2e8f0; color: var(--text); }
     .btn-secondary:hover { background: #cbd5e1; }
-    .btn-block { width: 100%; }
 
     /* Urgent Request Banner */
-    .urgent-banner { background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); padding: 20px; margin-bottom: 24px; position: relative; }
-    .urgent-header { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; margin-bottom: 8px; font-size: 16px; }
-    .urgent-body { font-size: 14px; color: #7f1d1d; }
+    .urgent-banner { background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+    .urgent-header { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 16px; }
+    .urgent-body { font-size: 14px; color: #7f1d1d; margin-top: 10px; }
 
     /* Donor Grid */
     .donor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
@@ -78,7 +76,7 @@
 
     /* Utilities */
     .hidden { display: none !important; }
-    .flex-between { display: flex; align-items: center; justify-content: space-between; }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   </style>
 </head>
 <body>
@@ -113,8 +111,11 @@
 
     <!-- 1. Urgent Blood Need Banner -->
     <div id="urgentBanner" class="urgent-banner hidden">
-      <div class="urgent-header">
-        <span>🚨</span> URGENT BLOOD NEEDED
+      <div class="flex-between">
+        <div class="urgent-header">
+          <span>🚨</span> URGENT BLOOD NEEDED
+        </div>
+        <div id="urgentActions"></div>
       </div>
       <div id="urgentDetails" class="urgent-body"></div>
     </div>

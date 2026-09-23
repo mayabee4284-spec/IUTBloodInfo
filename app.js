@@ -14,14 +14,15 @@ import {
   collection, 
   addDoc, 
   getDocs, 
+  deleteDoc,
   query, 
   orderBy, 
   limit 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 1. Firebase Configuration (Ensure your keys are correct)
+// Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDOENSjDoRlXCeO3xYfN7h1LnIxxrWHHHY",
+  apiKey: "YOUR_FULL_REAL_API_KEY_HERE",
   authDomain: "iutbloodinfo.firebaseapp.com",
   projectId: "iutbloodinfo",
   storageBucket: "iutbloodinfo.firebasestorage.app",
@@ -30,13 +31,12 @@ const firebaseConfig = {
   measurementId: "G-K9RVCN91WT"
 };
 
-// Initialize Firebase & Services
+// Initialize Services
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Allowed University Email Domain
 const ALLOWED_DOMAIN = "@iut-dhaka.edu";
 
 // DOM Elements
@@ -57,19 +57,19 @@ const donorsList = document.getElementById("donorsList");
 
 const urgentBanner = document.getElementById("urgentBanner");
 const urgentDetails = document.getElementById("urgentDetails");
+const urgentActions = document.getElementById("urgentActions");
 const openUrgentModalBtn = document.getElementById("openUrgentModalBtn");
 const urgentFormCard = document.getElementById("urgentFormCard");
 const urgentForm = document.getElementById("urgentForm");
 const cancelUrgentBtn = document.getElementById("cancelUrgentBtn");
 
-// --- 2. Auth Listeners & Functions ---
+// --- 1. Auth Listeners ---
 
 loginBtn.addEventListener("click", async () => {
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
-    // Verify University Domain
     if (!user.email.endsWith(ALLOWED_DOMAIN)) {
       alert(`Please use your official university email ending in ${ALLOWED_DOMAIN}`);
       await signOut(auth);
@@ -87,25 +87,22 @@ logoutBtn.addEventListener("click", () => {
 
 onAuthStateChanged(auth, async (user) => {
   if (user && user.email.endsWith(ALLOWED_DOMAIN)) {
-    // Show Authenticated Interface
     authSection.classList.add("hidden");
     userInfo.classList.remove("hidden");
     appContent.classList.remove("hidden");
     userEmailSpan.textContent = user.email;
 
-    // Load User Data & Donors
     await loadUserProfile(user.uid);
     await loadDonors();
     await loadUrgentBanner();
   } else {
-    // Show Logged Out Interface
     authSection.classList.remove("hidden");
     userInfo.classList.add("hidden");
     appContent.classList.add("hidden");
   }
 });
 
-// --- 3. Profile Management ---
+// --- 2. Profile Management ---
 
 async function loadUserProfile(uid) {
   try {
@@ -115,7 +112,7 @@ async function loadUserProfile(uid) {
       bloodGroupInput.value = data.bloodGroup || "A+";
       phoneInput.value = data.phone || "";
       lastDonatedInput.value = data.lastDonated || "";
-      isAvailableInput.checked = data.isAvailable !== false; // Default to true if undefined
+      isAvailableInput.checked = data.isAvailable !== false;
     }
   } catch (error) {
     console.error("Error loading profile:", error);
@@ -146,7 +143,7 @@ profileForm.addEventListener("submit", async (e) => {
   }
 });
 
-// --- 4. Eligibility Calculator ---
+// --- 3. Eligibility Calculation ---
 
 function getEligibilityStatus(lastDonatedString) {
   if (!lastDonatedString) {
@@ -166,7 +163,7 @@ function getEligibilityStatus(lastDonatedString) {
   }
 }
 
-// --- 5. Donors List Directory ---
+// --- 4. Donor Directory ---
 
 async function loadDonors() {
   donorsList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px;">Loading donors list...</p>`;
@@ -179,8 +176,6 @@ async function loadDonors() {
 
     querySnapshot.forEach((docSnap) => {
       const donor = docSnap.data();
-
-      // Only show donors who marked themselves available
       if (donor.isAvailable === false) return;
 
       activeCount++;
@@ -213,7 +208,7 @@ async function loadDonors() {
   }
 }
 
-// --- 6. Urgent Request Module ---
+// --- 5. Urgent Request Module ---
 
 openUrgentModalBtn.addEventListener("click", () => {
   urgentFormCard.classList.remove("hidden");
@@ -225,6 +220,8 @@ cancelUrgentBtn.addEventListener("click", () => {
 
 urgentForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) return;
   
   const bloodGroup = document.getElementById("urgentBloodGroup").value;
   const hospital = document.getElementById("urgentHospital").value;
@@ -235,6 +232,8 @@ urgentForm.addEventListener("submit", async (e) => {
       bloodGroup,
       hospital,
       phone,
+      postedByUid: user.uid,
+      postedByEmail: user.email,
       createdAt: new Date()
     });
 
@@ -254,15 +253,55 @@ async function loadUrgentBanner() {
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-      const req = querySnapshot.docs[0].data();
+      const docSnap = querySnapshot.docs[0];
+      const req = docSnap.data();
+      const reqId = docSnap.id;
+      const currentUser = auth.currentUser;
+
       urgentDetails.innerHTML = `
         <p style="margin-bottom: 4px;"><strong>Blood Group Needed:</strong> <span style="font-size: 16px; font-weight: bold;">${req.bloodGroup}</span></p>
         <p style="margin-bottom: 4px;"><strong>Location:</strong> ${req.hospital}</p>
-        <p><strong>Contact Immediately:</strong> <a href="tel:${req.phone}" style="color: #991b1b; font-weight: bold;">${req.phone}</a></p>
+        <p style="margin-bottom: 4px;"><strong>Contact Immediately:</strong> <a href="tel:${req.phone}" style="color: #991b1b; font-weight: bold;">${req.phone}</a></p>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Posted by: ${req.postedByEmail || "Campus Student"}</p>
       `;
+
+      urgentActions.innerHTML = "";
+
+      // Creator sees "Mark Fulfilled & Remove", viewers see "Dismiss"
+      if (currentUser && req.postedByUid === currentUser.uid) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn";
+        deleteBtn.style.cssText = "background-color: #16a34a; font-size: 12px; padding: 6px 12px;";
+        deleteBtn.textContent = "✓ Mark Fulfilled & Remove";
+        deleteBtn.onclick = () => deleteUrgentRequest(reqId);
+        urgentActions.appendChild(deleteBtn);
+      } else {
+        const dismissBtn = document.createElement("button");
+        dismissBtn.className = "btn btn-secondary";
+        dismissBtn.style.cssText = "font-size: 12px; padding: 6px 12px;";
+        dismissBtn.textContent = "Dismiss";
+        dismissBtn.onclick = () => urgentBanner.classList.add("hidden");
+        urgentActions.appendChild(dismissBtn);
+      }
+
       urgentBanner.classList.remove("hidden");
+    } else {
+      urgentBanner.classList.add("hidden");
     }
   } catch (error) {
     console.error("Error loading urgent request:", error);
+  }
+}
+
+async function deleteUrgentRequest(requestId) {
+  if (!confirm("Has this blood request been fulfilled? Clicking OK will remove this alert for everyone.")) return;
+
+  try {
+    await deleteDoc(doc(db, "urgent_requests", requestId));
+    alert("Urgent request removed successfully!");
+    urgentBanner.classList.add("hidden");
+  } catch (error) {
+    console.error("Error deleting urgent request:", error);
+    alert("Failed to delete the request.");
   }
 }
