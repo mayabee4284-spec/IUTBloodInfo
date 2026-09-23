@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IUT LifeLink — Campus Blood Donor Network</title>
+  <title>IUT BloodInfo — Campus Blood Donor Network</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -93,8 +93,6 @@
 
     .filter-bar { display: flex; gap: 12px; align-items: center; background: white; padding: 14px 18px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; box-shadow: var(--shadow-sm); }
     .filter-bar select { width: auto; flex: 1; min-width: 150px; font-size: 13px; }
-
-    .meta-footer { font-size: 12px; color: var(--text-subtle); margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
   </style>
 </head>
 <body>
@@ -104,7 +102,7 @@
       <div class="brand">
         <div class="brand-icon">🩸</div>
         <div>
-          <div class="brand-title">IUT LifeLink</div>
+          <div class="brand-title">IUT BloodInfo</div>
           <div class="brand-subtitle">Campus Blood Donor Network</div>
         </div>
       </div>
@@ -118,9 +116,8 @@
     <!-- Login Section -->
     <div id="authSection" class="card auth-card">
       <div style="font-size: 36px; margin-bottom: 16px;">🩸</div>
-      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em;">Welcome to LifeLink</h2>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6;">A trusted, high-privacy peer network connecting IUT donors with emergency campus requests.</p>
-      <button id="loginBtn" class="btn btn-full">Continue with University Mail</button>
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 28px; letter-spacing: -0.02em;">Welcome to BloodInfo</h2>
+      <button id="loginBtn" class="btn btn-full">Sign in with Google</button>
       <div style="font-size: 11px; color: var(--text-subtle); margin-top: 16px;">Restricted to @iut-dhaka.edu accounts</div>
     </div>
 
@@ -159,7 +156,7 @@
           </div>
           <div class="form-group">
             <label>Primary Contact Number</label>
-            <input type="tel" id="urgentPhone" placeholder="017XXXXXXXX" required>
+            <input type="tel" id="urgentPhone" placeholder="01XXXXXXXXX" required>
           </div>
           <div style="display: flex; gap: 10px; justify-content: flex-end;">
             <button type="button" id="cancelUrgentBtn" class="btn btn-secondary">Cancel</button>
