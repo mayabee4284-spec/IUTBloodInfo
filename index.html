@@ -3,205 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IUT Blood Donor Portal</title>
+  <title>IUT LifeLink — Campus Blood Donor Network</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary: #dc2626;
-      --primary-hover: #b91c1c;
-      --primary-light: #fef2f2;
+      --bg: #fafaf9;
       --surface: #ffffff;
-      --bg: #f8fafc;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --surface-elevated: #f5f5f4;
+      --text: #09090b;
+      --text-muted: #52525b;
+      --text-subtle: #a1a1aa;
+      --border: #e4e4e7;
+      --primary: #e11d48;
+      --primary-hover: #be123c;
+      --primary-subtle: #ffe4e6;
+      --emerald-surface: #ecfdf5;
+      --emerald-text: #047857;
+      --amber-surface: #fffbeb;
+      --amber-text: #b45309;
+      --radius-sm: 8px;
+      --radius: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 20px; max-width: 900px; margin: 0 auto; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 32px 16px; min-height: 100vh; line-height: 1.5; }
     .hidden { display: none !important; }
 
-    header { text-align: center; margin-bottom: 24px; padding-top: 10px; }
-    .logo-icon { width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 20px; }
-    h1 { font-size: 24px; font-weight: 700; color: var(--text); }
-    .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+    .shell { max-width: 960px; margin: 0 auto; }
 
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
-    .auth-card { text-align: center; max-width: 400px; margin: 40px auto; }
+    /* Header */
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon { width: 44px; height: 44px; background: var(--primary-subtle); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
+    .brand-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+    .brand-subtitle { font-size: 13px; color: var(--text-muted); }
 
-    .btn { background-color: var(--primary); color: white; border: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn:hover { background-color: var(--primary-hover); }
-    .btn-secondary { background-color: transparent; color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background-color: #f1f5f9; }
+    /* Cards & Containers */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow); margin-bottom: 24px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .auth-card { text-align: center; max-width: 440px; margin: 80px auto; padding: 40px 32px; }
 
-    #urgentFeed { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+    /* Buttons */
+    .btn { background-color: var(--primary); color: white; border: none; padding: 11px 20px; font-size: 14px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: -0.01em; }
+    .btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25); }
+    .btn:active { transform: translateY(0); }
+    .btn-secondary { background-color: var(--surface-elevated); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background-color: #e7e5e4; box-shadow: none; transform: none; }
+    .btn-full { width: 100%; }
 
-    .urgent-banner { background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); padding: 16px; color: #991b1b; }
-    .urgent-header { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    /* Emergency Feed */
+    #urgentFeed { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+    .urgent-banner { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border: 1.5px solid #fda4af; border-radius: var(--radius); padding: 20px; color: #881337; box-shadow: 0 4px 14px rgba(244, 63, 94, 0.1); }
+    .urgent-header { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; color: #be123c; margin-bottom: 12px; }
+    .pulse-dot { width: 8px; height: 8px; background-color: #e11d48; border-radius: 50%; box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(225, 29, 72, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
 
-    .form-group { margin-bottom: 16px; text-align: left; }
-    label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-    input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
-    input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
+    /* Forms */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
 
-    .donors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
-    .donor-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
-    .donor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .donor-name { font-weight: 600; font-size: 15px; }
-    .donor-sub { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
-    .blood-badge { background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 12px; padding: 4px 8px; border-radius: 6px; }
-    .status-badge { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 20px; display: inline-block; }
-    .status-eligible { background: #dcfce7; color: #15803d; }
-    .status-ineligible { background: #fef3c7; color: #b45309; }
+    .form-group { margin-bottom: 20px; text-align: left; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; letter-spacing: -0.01em; }
+    input, select { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: white; color: var(--text); transition: border-color 0.2s, box-shadow 0.2s; }
+    input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12); }
+    .checkbox-wrap { display: flex; align-items: center; gap: 10px; margin-top: 28px; background: var(--surface-elevated); padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer; }
+    .checkbox-wrap input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+    .checkbox-wrap label { margin-bottom: 0; cursor: pointer; font-weight: 500; }
 
-    .filter-bar { display: flex; gap: 12px; align-items: center; background: white; padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px; flex-wrap: wrap; }
-    .filter-bar select { width: auto; flex: 1; min-width: 140px; }
+    /* Directory Grid */
+    .donors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; margin-top: 20px; }
+    .donor-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); transition: transform 0.2s ease, border-color 0.2s ease; display: flex; flex-direction: column; justify-content: space-between; }
+    .donor-card:hover { transform: translateY(-2px); border-color: #d4d4d8; box-shadow: var(--shadow); }
+    .donor-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 12px; }
+    .donor-name { font-weight: 700; font-size: 15px; color: var(--text); letter-spacing: -0.01em; }
+    .donor-sub { font-size: 12px; font-weight: 600; color: var(--text-muted); background: var(--surface-elevated); display: inline-block; padding: 3px 8px; border-radius: 6px; margin-bottom: 14px; width: fit-content; }
+    .blood-badge { background: var(--primary-subtle); color: var(--primary); font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 8px; font-variant-numeric: tabular-nums; }
+    
+    .status-badge { font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.01em; }
+    .status-eligible { background: var(--emerald-surface); color: var(--emerald-text); border: 1px solid #d1fae5; }
+    .status-ineligible { background: var(--amber-surface); color: var(--amber-text); border: 1px solid #fde68a; }
+
+    .filter-bar { display: flex; gap: 12px; align-items: center; background: white; padding: 14px 18px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; box-shadow: var(--shadow-sm); }
+    .filter-bar select { width: auto; flex: 1; min-width: 150px; font-size: 13px; }
+
+    .meta-footer { font-size: 12px; color: var(--text-subtle); margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo-icon">🩸</div>
-    <h1>IUT Blood Donor Portal</h1>
-    <p class="subtitle">A unified campus network for blood donation</p>
-  </header>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-icon">🩸</div>
+        <div>
+          <div class="brand-title">IUT LifeLink</div>
+          <div class="brand-subtitle">Campus Blood Donor Network</div>
+        </div>
+      </div>
+      <!-- Signed In User Bar embedded nicely -->
+      <div id="userInfo" class="hidden flex-between" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
+        <span style="font-size: 13px; color: var(--text-muted);">Signed in as <strong id="userName" style="color: var(--text);"></strong></span>
+        <button id="logoutBtn" class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;">Sign Out</button>
+      </div>
+    </header>
 
-  <!-- Login Section -->
-  <div id="authSection" class="card auth-card">
-    <h2 style="font-size: 18px; margin-bottom: 8px;">Welcome Back</h2>
-    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Please sign in using your official university email to continue.</p>
-    <button id="loginBtn" class="btn" style="width: 100%;">Sign in with Google</button>
-  </div>
-
-  <!-- Signed In User Bar -->
-  <div id="userInfo" class="card flex-between hidden" style="padding: 12px 20px; margin-bottom: 20px;">
-    <span style="font-size: 13px; color: var(--text-muted);">Signed in as <strong id="userName" style="color: var(--text);"></strong></span>
-    <button id="logoutBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Sign Out</button>
-  </div>
-
-  <!-- Main App Content -->
-  <div id="appContent" class="hidden">
-
-    <!-- Emergency Requests Feed Container -->
-    <div id="urgentFeed"></div>
-
-    <div class="flex-between" style="margin-bottom: 16px;">
-      <h2 style="font-size: 18px; font-weight: 700;">Dashboard</h2>
-      <button id="openUrgentModalBtn" class="btn">+ Post Emergency Need</button>
+    <!-- Login Section -->
+    <div id="authSection" class="card auth-card">
+      <div style="font-size: 36px; margin-bottom: 16px;">🩸</div>
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em;">Welcome to LifeLink</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6;">A trusted, high-privacy peer network connecting IUT donors with emergency campus requests.</p>
+      <button id="loginBtn" class="btn btn-full">Continue with University Mail</button>
+      <div style="font-size: 11px; color: var(--text-subtle); margin-top: 16px;">Restricted to @iut-dhaka.edu accounts</div>
     </div>
 
-    <!-- Create Emergency Request Form -->
-    <div id="urgentFormCard" class="card hidden" style="border-left: 4px solid var(--primary);">
-      <h3 style="font-size: 16px; margin-bottom: 12px;">Post Emergency Need</h3>
-      <form id="urgentForm">
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Required Blood Group</label>
-            <select id="urgentBloodGroup" required>
-              <option value="A+">A+</option><option value="A-">A-</option>
-              <option value="B+">B+</option><option value="B-">B-</option>
-              <option value="O+">O+</option><option value="O-">O-</option>
-              <option value="AB+">AB+</option><option value="AB-">AB-</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Hospital / Location</label>
-            <input type="text" id="urgentHospital" placeholder="e.g. Chittagong Medical Centre" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Contact Phone Number</label>
-          <input type="tel" id="urgentPhone" placeholder="017XXXXXXXX" required>
-        </div>
-        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-          <button type="button" id="cancelUrgentBtn" class="btn btn-secondary">Cancel</button>
-          <button type="submit" class="btn">Broadcast Request</button>
-        </div>
-      </form>
-    </div>
+    <!-- Main App Content -->
+    <div id="appContent" class="hidden">
 
-    <!-- My Profile Section -->
-    <div class="card">
-      <h3 style="font-size: 16px; margin-bottom: 16px;">My Donor Profile</h3>
-      <form id="profileForm">
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Department</label>
-            <select id="dept" required>
-              <option value="CSE">CSE</option>
-              <option value="EEE">EEE</option>
-              <option value="SWE">SWE</option>
-              <option value="ME">ME</option>
-              <option value="CEE">CEE</option>
-              <option value="BTM">BTM</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Batch</label>
-            <input type="text" id="batch" placeholder="e.g. Batch '20 / '21" required>
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Blood Group</label>
-            <select id="bloodGroup">
-              <option value="A+">A+</option><option value="A-">A-</option>
-              <option value="B+">B+</option><option value="B-">B-</option>
-              <option value="O+">O+</option><option value="O-">O-</option>
-              <option value="AB+">AB+</option><option value="AB-">AB-</option>
-            </select>
-          </div>
-         <div class="form-group">
-            <label>Phone Number (Optional)</label>
-            <input type="tel" id="phone" placeholder="017XXXXXXXX">
-            </div>
-        </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Last Donated Date (Leave blank if never)</label>
-            <input type="date" id="lastDonated">
-          </div>
-          <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 24px;">
-            <input type="checkbox" id="isAvailable" style="width: auto;" checked>
-            <label for="isAvailable" style="margin-bottom: 0; cursor: pointer;">Available for Emergency Calls</label>
-          </div>
-        </div>
-        <button type="submit" class="btn" style="margin-top: 8px;">Save Profile</button>
-      </form>
-    </div>
+      <!-- Emergency Requests Feed Container -->
+      <div id="urgentFeed"></div>
 
-    <!-- Donor Directory Section -->
-    <div style="margin-top: 32px;">
-      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Campus Donor Directory</h3>
-      
-      <!-- Filter Bar -->
-      <div class="filter-bar">
-        <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Filter By:</span>
-        <select id="filterBloodGroup">
-          <option value="ALL">All Blood Groups</option>
-          <option value="A+">A+</option><option value="A-">A-</option>
-          <option value="B+">B+</option><option value="B-">B-</option>
-          <option value="O+">O+</option><option value="O-">O-</option>
-          <option value="AB+">AB+</option><option value="AB-">AB-</option>
-        </select>
-        <select id="filterEligibility">
-          <option value="ALL">All Availability</option>
-          <option value="ELIGIBLE">Eligible Donors Only (90+ Days)</option>
-        </select>
+      <div class="flex-between" style="margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">Emergency Broadcasts</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">Active critical requirements across healthcare facilities</p>
+        </div>
+        <button id="openUrgentModalBtn" class="btn">+ Broadcast Need</button>
       </div>
 
-      <div id="donorsList" class="donors-grid"></div>
-    </div>
+      <!-- Create Emergency Request Modal/Form -->
+      <div id="urgentFormCard" class="card hidden" style="border-left: 4px solid var(--primary); background: #fff5f5;">
+        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px;">New Emergency Requirement</h3>
+        <form id="urgentForm">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Required Blood Group</label>
+              <select id="urgentBloodGroup" required>
+                <option value="A+">A+</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B-">B-</option>
+                <option value="O+">O+</option><option value="O-">O-</option>
+                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Hospital / Facility Location</label>
+              <input type="text" id="urgentHospital" placeholder="e.g. Uttara Crescent Hospital" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Primary Contact Number</label>
+            <input type="tel" id="urgentPhone" placeholder="017XXXXXXXX" required>
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" id="cancelUrgentBtn" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn">Publish Broadcast</button>
+          </div>
+        </form>
+      </div>
 
+      <!-- My Profile Section -->
+      <div class="card">
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: 700;">My Donor Profile</h3>
+          <p style="font-size: 12px; color: var(--text-muted);">Manage your campus visibility and availability state</p>
+        </div>
+        <form id="profileForm">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Department</label>
+              <select id="dept" required>
+                <option value="CSE">CSE</option>
+                <option value="EEE">EEE</option>
+                <option value="SWE">SWE</option>
+                <option value="ME">ME</option>
+                <option value="CEE">CEE</option>
+                <option value="BTM">BTM</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Batch</label>
+              <input type="text" id="batch" placeholder="e.g. '21 or '22" required>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Blood Group</label>
+              <select id="bloodGroup">
+                <option value="A+">A+</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B-">B-</option>
+                <option value="O+">O+</option><option value="O-">O-</option>
+                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Phone Number (Optional)</label>
+              <input type="tel" id="phone" placeholder="017XXXXXXXX">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Last Donated Date (Optional)</label>
+              <input type="date" id="lastDonated">
+            </div>
+            <div>
+              <div class="checkbox-wrap">
+                <input type="checkbox" id="isAvailable" checked>
+                <label for="isAvailable">Available for Emergency Calls</label>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn" style="margin-top: 12px;">Save Profile Settings</button>
+        </form>
+      </div>
+
+      <!-- Donor Directory Section -->
+      <div style="margin-top: 36px;">
+        <div class="flex-between" style="margin-bottom: 16px;">
+          <h3 style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">Campus Donor Directory</h3>
+        </div>
+        
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Filter:</span>
+          <select id="filterBloodGroup">
+            <option value="ALL">All Blood Groups</option>
+            <option value="A+">A+</option><option value="A-">A-</option>
+            <option value="B+">B+</option><option value="B-">B-</option>
+            <option value="O+">O+</option><option value="O-">O-</option>
+            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+          </select>
+          <select id="filterEligibility">
+            <option value="ALL">All Availability Statuses</option>
+            <option value="ELIGIBLE">Eligible Donors Only (90+ Days)</option>
+          </select>
+        </div>
+
+        <div id="donorsList" class="donors-grid"></div>
+      </div>
+
+    </div>
   </div>
 
   <script type="module" src="app.js"></script>
