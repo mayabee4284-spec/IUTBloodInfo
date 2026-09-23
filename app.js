@@ -22,7 +22,7 @@ import {
 
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "YOUR_FULL_REAL_API_KEY_HERE",
+  apiKey: "AIzaSyDOENSjDoRlXCeO3xYfN7h1LnIxxrWHHHY",
   authDomain: "iutbloodinfo.firebaseapp.com",
   projectId: "iutbloodinfo",
   storageBucket: "iutbloodinfo.firebasestorage.app",
@@ -30,6 +30,7 @@ const firebaseConfig = {
   appId: "1:219192835330:web:bf2eaba4a19e064541161b",
   measurementId: "G-K9RVCN91WT"
 };
+
 
 // Initialize Services
 const app = initializeApp(firebaseConfig);
