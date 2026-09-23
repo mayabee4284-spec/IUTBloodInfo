@@ -233,9 +233,14 @@ function renderDonors() {
         <span class="blood-badge">${donor.bloodGroup}</span>
       </div>
       ${deptBatchText ? `<div class="donor-sub">${deptBatchText}</div>` : ''}
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
-        <strong>Phone:</strong> <a href="tel:${donor.phone}" style="color: var(--primary); text-decoration: none; font-weight: 600;">${donor.phone}</a>
-      </p>
+     const phoneDisplay = donor.phone 
+  ? `<a href="tel:${donor.phone}" style="color: var(--primary); text-decoration: none; font-weight: 600;">${donor.phone}</a>`
+  : `<span style="color: var(--text-muted); font-style: italic;">Not Provided</span>`;
+
+// Inside the card innerHTML:
+<p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+  <strong>Phone:</strong> ${phoneDisplay}
+</p>
       <div>
         <span class="status-badge ${statusClass}">${status.label}</span>
       </div>
